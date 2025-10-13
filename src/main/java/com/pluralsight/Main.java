@@ -1,6 +1,7 @@
 package com.pluralsight;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,8 +35,7 @@ public class Main {
                     "L) Ledger\n" +
                     "E) Exit\n" +
                     "Your Choice:");
-            String input = scanner.nextLine().trim();
-            char userChoice = Character.toUpperCase(input.charAt(0));
+            char userChoice = Character.toUpperCase(scanner.next().charAt(0));//read the char
             switch (userChoice) {
                 case 'D':
                     addDeposit();
@@ -87,8 +87,8 @@ public class Main {
                     "R) Reports\n" +
                     "H) Home\n" +
                     "Your Choice:");
-            String input = scanner.nextLine().trim();
-            char userChoice = Character.toUpperCase(input.charAt(0));
+
+            char userChoice = Character.toUpperCase(scanner.next().charAt(0));
             switch (userChoice) {
                 case 'A':
                     allEntries();
@@ -209,13 +209,13 @@ public class Main {
         int userChoice = scanner.nextInt();
         switch (userChoice) {
             case 1:
-                monthsToDate();
+                monthToDate();
                 break;
             case 2:
-                previousMonths();
+                previousMonth();
                 break;
             case 3:
-                YearsToDate();
+                yearToDate();
                 break;
             case 4:
                 previousYear();
@@ -230,10 +230,11 @@ public class Main {
         }
     }
 
-    public static void YearsToDate() {
+    public static void yearToDate() {
+
     }
 
-    public static void previousMonths() {
+    public static void previousMonth() {
     }
 
     /**
@@ -270,8 +271,37 @@ public class Main {
     public static void previousYear() {
     }
 
-    public static void monthsToDate() {
+    public static void monthToDate() {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+            String entries;
+            System.out.println("Audit For Current Month:");
+            LocalDate currentDate = LocalDate.now();
+            int currentMonth = currentDate.getMonthValue();
+            boolean isCurrentMonth = false;
 
+            while ((entries = bufferedReader.readLine()) != null) {
+                String[] parts = entries.split("\\|");
+
+                String date = parts[0];
+                if (parts[0].equalsIgnoreCase("date")) {
+                    continue;//skip the header
+                }
+
+                String[] dateparts = date.split("-");
+                int currentMonthPart = Integer.parseInt(dateparts[1]);
+                if (currentMonth == currentMonthPart) {
+                    System.out.println(entries);
+                    isCurrentMonth = true;
+                }
+            }
+            if (!isCurrentMonth) {
+                System.out.println("There's no record for this month");
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
