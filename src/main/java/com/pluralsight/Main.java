@@ -14,7 +14,10 @@ public class Main {
     static String fileName = "src/main/resources/transactions.csv";
 
     public static void main(String[] args) {
-        System.out.println("==========WELCOME TO LEDGER APPLICATION==========");
+        System.out.println("========== WELCOME TO BILL'S LEDGER APP ==========");
+        System.out.println("|                     :)                          |");
+        System.out.println("===================================================");
+
         homepage();
     }
 
@@ -23,16 +26,16 @@ public class Main {
      *
      */
 
-    private static void homepage() {
+    public static void homepage() {
         boolean exit = false;
         while (!exit) {
-            System.out.println("D) Add Deposit\n" +
+            System.out.print("Please Enter a Letter Corresponding to Your Choice\nD) Add Deposit\n" +
                     "P) Make Payment (Debit)\n" +
                     "L) Ledger\n" +
                     "E) Exit\n" +
                     "Your Choice:");
-            String input = scanner.nextLine();
-            char userChoice = input.charAt(0);
+            String input = scanner.nextLine().trim();
+            char userChoice = Character.toUpperCase(input.charAt(0));
             switch (userChoice) {
                 case 'D':
                     addDeposit();
@@ -44,6 +47,7 @@ public class Main {
                     ledger();
                     break;
                 case 'E':
+                    System.out.println("GOOD BYE!!E");
                     exit = true;
 
             }
@@ -56,21 +60,23 @@ public class Main {
      * Adds deposits to the arrayList
      *
      */
-    private static void addDeposit() {
-        getInfoFromUser(debitTransactions, false);
+    public static void addDeposit() {
+        getInfoFromUserToFile(debitTransactions, false);
 
     }
 
     /**
      * Add Payments to the list
      */
-    private static void makePayment() {
-        getInfoFromUser(paymentTransactions, true);
+    public static void makePayment() {
+        getInfoFromUserToFile(paymentTransactions, true);
     }
+
+
     /**
      * ledger Manuel
      */
-    private static void ledger() {
+    public static void ledger() {
         boolean returnHome = false;
 
         while (!returnHome) {
@@ -81,8 +87,8 @@ public class Main {
                     "R) Reports\n" +
                     "H) Home\n" +
                     "Your Choice:");
-            String input = scanner.nextLine();
-            char userChoice = input.charAt(0);
+            String input = scanner.nextLine().trim();
+            char userChoice = Character.toUpperCase(input.charAt(0));
             switch (userChoice) {
                 case 'A':
                     allEntries();
@@ -104,60 +110,21 @@ public class Main {
 
     }
 
-    private static void report() {
-
-    }
 
     /**
-     * Print Debits in the debit List
-     */
-    private static void deposits() {
-        System.out.println("Your Deposit List:");
-        for (int i = 0; i < debitTransactions.size(); i++) {
-            System.out.println(debitTransactions.get(i).toString());
-        }
-    }
-
-    /**
-     * Print payments in the payment List
-     */
-    private static void payments() {
-        System.out.println("Your Payment List:");
-        for (int i = 0; i < paymentTransactions.size(); i++) {
-            System.out.println(paymentTransactions.get(i).toString());
-        }
-    }
-
-    /**
-     * Print all data reading them from the file
-     */
-    private static void allEntries() {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            String entries;
-            while ((entries = bufferedReader.readLine()) != null) {
-                System.out.println(entries);
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    /**
-     * Get Info from user based on the transactions save to respective ArrayLists
+     * Get Info from user based on the transactions save to FILE and respective ArrayLists
+     *
      * @param transactionsType
      * @param isPayment
      */
-    public static void getInfoFromUser(ArrayList<Transactions> transactionsType, boolean isPayment) {
+    public static void getInfoFromUserToFile(ArrayList<Transactions> transactionsType, boolean isPayment) {
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
         String timeDateStamp = currentTime.format(formatter);
         String[] timeDateParts = timeDateStamp.split("\\|");
         String date = timeDateParts[0];
         String time = timeDateParts[1];
-        System.out.println("Enter payment Description:");
+        System.out.println("Enter Debit/Payment Description:");
         String description = scanner.nextLine();
         System.out.println("Vendor:");
         String vendor = scanner.nextLine();
@@ -188,6 +155,123 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * * Print Debits in the debit List
+     */
+    public static void deposits() {
+        System.out.println("Your Deposit List:");
+        for (int i = 0; i < debitTransactions.size(); i++) {
+            System.out.println(debitTransactions.get(i).toString());
+        }
+    }
+
+    /**
+     * Print payments in the payment List
+     */
+    public static void payments() {
+        System.out.println("Your Payment List:");
+        for (int i = 0; i < paymentTransactions.size(); i++) {
+            System.out.println(paymentTransactions.get(i).toString());
+        }
+    }
+
+    /**
+     * * Print all
+     */
+    public static void allEntries() {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+            String entries;
+            while ((entries = bufferedReader.readLine()) != null) {
+                System.out.println(entries);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    /**
+     * Report method to display the menu
+     */
+    public static void report() {
+        System.out.println("1) Month To Date\n" +
+                "2) Previous Month\n" +
+                "3) Year To Date\n" +
+                "4) Previous Year\n" +
+                "5) Search by Vendor\n" +
+                "0) Back\n" +
+                "Choice: ");
+        int userChoice = scanner.nextInt();
+        switch (userChoice) {
+            case 1:
+                monthsToDate();
+                break;
+            case 2:
+                previousMonths();
+                break;
+            case 3:
+                YearsToDate();
+                break;
+            case 4:
+                previousYear();
+                break;
+            case 5:
+                searchByVendor();
+                break;
+            case 0:
+                ledger();
+                break;
+
+        }
+    }
+
+    public static void YearsToDate() {
+    }
+
+    public static void previousMonths() {
+    }
+
+    /**
+     * Search Vendor by name and print if match is found
+     */
+    public static void searchByVendor() {
+        String filedata;
+        System.out.println("Enter Vendor Name To Search For:");
+        scanner.nextLine();
+        String vendorName = scanner.nextLine();
+        boolean matchFound = false;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+            while ((filedata = bufferedReader.readLine()) != null) {
+                String[] fileparts = filedata.split("\\|");
+                if (fileparts[0].equalsIgnoreCase("date")) {
+                    continue;//skip the header
+                }
+                if (vendorName.equalsIgnoreCase(fileparts[3])) {
+                    System.out.println(filedata);
+                    matchFound = true;
+                }
+            }
+            if (!matchFound) {
+                System.out.println("Vendor Not found");
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void previousYear() {
+    }
+
+    public static void monthsToDate() {
+
     }
 }
 
