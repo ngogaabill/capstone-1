@@ -124,6 +124,8 @@ public class Main {
         String[] timeDateParts = timeDateStamp.split("\\|");
         String date = timeDateParts[0];
         String time = timeDateParts[1];
+
+        scanner.nextLine();
         System.out.println("Enter Debit/Payment Description:");
         String description = scanner.nextLine();
         System.out.println("Vendor:");
@@ -231,10 +233,11 @@ public class Main {
     }
 
     public static void yearToDate() {
-
+        currentAndPreviousMonth("current-year");
     }
 
     public static void previousMonth() {
+        currentAndPreviousMonth("previous-month");
     }
 
     /**
@@ -269,9 +272,11 @@ public class Main {
     }
 
     public static void previousYear() {
+        currentAndPreviousMonth("previous-year");
     }
 
     public static void monthToDate() {
+        /*
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String entries;
             System.out.println("Audit For Current Month:");
@@ -301,9 +306,70 @@ public class Main {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }*/
+        currentAndPreviousMonth("current-month");
+    }
+
+    public static void currentAndPreviousMonth(String statusort) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+            String entries;
+            boolean found = false;
+            //current Times
+            LocalDate currentDate = LocalDate.now();
+            int monthValue = currentDate.getMonthValue();
+            int currentYear = currentDate.getYear();
+            //Previous Times
+            //LocalDate previousDate = currentDate.minusMonths(1);
+            int previousMonth = currentDate.getMonthValue() - 1;
+            int previousYear = currentDate.getYear() - 1;
+
+            while ((entries = bufferedReader.readLine()) != null) {
+                String[] parts = entries.split("\\|");
+
+                String date = parts[0];
+                if (parts[0].equalsIgnoreCase("date")) {
+                    continue;//skip the header
+                }
+
+                String[] dateparts = date.split("-");
+                int currentMonthPart = Integer.parseInt(dateparts[1]);
+                int currentYearPart = Integer.parseInt(dateparts[0]);
+                //current month
+                /*
+                 * Current-month,previous-month,current-year,previous-year
+                 * */
+                //current month
+                if (statusort.equals("current-month") && (currentYear == currentYearPart) && monthValue == currentMonthPart) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //previous month
+                if ((previousMonth == currentMonthPart) && statusort.equalsIgnoreCase("previous-month")) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //current year
+                if ((currentYear == currentYearPart) && statusort.equalsIgnoreCase("current-Year")) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //previous YEAR
+                if ((previousYear == currentYearPart) && statusort.equalsIgnoreCase("previous-Year")) {
+                    System.out.println(entries);
+                    found = true;
+                }
+
+            }
+            if (!found) {
+                System.out.println("No data for this interval");
+            }
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
         }
     }
 }
+
 
 
 
