@@ -10,8 +10,7 @@ import java.util.Scanner;
 
 public class Main {
     static Scanner scanner = new Scanner(System.in);
-    static ArrayList<Transactions> debitTransactions = new ArrayList<>();//hold the deposits +
-    static ArrayList<Transactions> paymentTransactions = new ArrayList<>();//hold the payments
+    static ArrayList<Transactions> transactionsArrayList = new ArrayList<>();
     static String fileName = "src/main/resources/transactions.csv";
 
     public static void main(String[] args) {
@@ -19,15 +18,37 @@ public class Main {
         System.out.println("|                     :)                          |");
         System.out.println("===================================================");
 
-        homepage();
+        loadTransactionsFromFile();//Load existing info from file to arraylist.
+        homePage();
+    }
+
+    private static void loadTransactionsFromFile() {
+        try(BufferedReader reader = new BufferedReader(new FileReader(fileName))){
+            String data;
+            while((data = reader.readLine()) != null){
+                String[] parts = data.split("\\|");
+                if(parts[0].equalsIgnoreCase("date")){
+                    continue;
+                }
+                String date = parts[0];
+                String time = parts[1];
+                String description = parts[2];
+                String vendor = parts[3];
+                double amount = Double.parseDouble(parts[4]);
+
+                Transactions transaction = new Transactions(date, time, description, vendor, amount);
+                transactionsArrayList.add(transaction);
+            }
+        }catch (IOException E){
+            System.err.println("File Not Found");
+        }
+
     }
 
     /**
-     * Homepage() gucci
-     *
+     * HomePage Method to Print the Home Page Screen
      */
-
-    public static void homepage() {
+    public static void homePage() {
         boolean exit = false;
         while (!exit) {
             System.out.print("Please Enter a Letter Corresponding to Your Choice\nD) Add Deposit\n" +
@@ -61,7 +82,8 @@ public class Main {
      *
      */
     public static void addDeposit() {
-        getInfoFromUserToFile(debitTransactions, false);
+        System.out.println("Please Enter Debit Description:");
+        loadUserInfoToFile(false);
 
     }
 
@@ -69,7 +91,8 @@ public class Main {
      * Add Payments to the list
      */
     public static void makePayment() {
-        getInfoFromUserToFile(paymentTransactions, true);
+        System.out.println("Please Enter Payment Description:");
+        loadUserInfoToFile(true);
     }
 
 
@@ -78,7 +101,6 @@ public class Main {
      */
     public static void ledger() {
         boolean returnHome = false;
-
         while (!returnHome) {
             System.out.println("A)Display all entries\n" +
                     "D) Deposits\n" +
@@ -114,10 +136,9 @@ public class Main {
     /**
      * Get Info from user based on the transactions save to FILE and respective ArrayLists
      *
-     * @param transactionsType
      * @param isPayment
      */
-    public static void getInfoFromUserToFile(ArrayList<Transactions> transactionsType, boolean isPayment) {
+    public static void loadUserInfoToFile(boolean isPayment) {
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
         String timeDateStamp = currentTime.format(formatter);
@@ -126,20 +147,19 @@ public class Main {
         String time = timeDateParts[1];
 
         scanner.nextLine();
-        System.out.println("Enter Debit/Payment Description:");
         String description = scanner.nextLine();
         System.out.println("Vendor:");
         String vendor = scanner.nextLine();
         System.out.println("Amount:");
         double amount = scanner.nextDouble();
 
-        if (isPayment) { //if so turn into neg amount
+        if (isPayment) { //if so turn into negative amount
             amount *= -1;
         }
 
         scanner.nextLine();//consume the newline
         Transactions transactions = new Transactions(date, time, description, vendor, amount);
-        transactionsType.add(transactions);
+        transactionsArrayList.add(transactions);
 
         File file = new File(fileName);
         boolean noHeader = file.length() == 0;
@@ -160,27 +180,32 @@ public class Main {
     }
 
     /**
-     * * Print Debits in the debit List
+     * * Print Debits in the Transaction List
      */
     public static void deposits() {
         System.out.println("Your Deposit List:");
-        for (int i = 0; i < debitTransactions.size(); i++) {
-            System.out.println(debitTransactions.get(i).toString());
+        for (int i = 0; i < transactionsArrayList.size(); i++) {
+            if (transactionsArrayList.get(i).getAmount() > 0) {
+                System.out.println(transactionsArrayList.get(i).toString());
+            }
         }
     }
 
     /**
-     * Print payments in the payment List
+     * Print payments in Transaction List
      */
     public static void payments() {
         System.out.println("Your Payment List:");
-        for (int i = 0; i < paymentTransactions.size(); i++) {
-            System.out.println(paymentTransactions.get(i).toString());
+        for (int i = 0; i < transactionsArrayList.size(); i++) {
+            if (transactionsArrayList.get(i).getAmount() < 0) {
+                System.out.println(transactionsArrayList.get(i).toString());
+            }
         }
+
     }
 
     /**
-     * * Print all
+     * * Print All Transaction Read From the File
      */
     public static void allEntries() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
@@ -193,7 +218,6 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
 
@@ -244,31 +268,21 @@ public class Main {
      * Search Vendor by name and print if match is found
      */
     public static void searchByVendor() {
-        String filedata;
-        System.out.println("Enter Vendor Name To Search For:");
-        scanner.nextLine();
-        String vendorName = scanner.nextLine();
-        boolean matchFound = false;
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            while ((filedata = bufferedReader.readLine()) != null) {
-                String[] fileparts = filedata.split("\\|");
-                if (fileparts[0].equalsIgnoreCase("date")) {
-                    continue;//skip the header
-                }
-                if (vendorName.equalsIgnoreCase(fileparts[3])) {
-                    System.out.println(filedata);
-                    matchFound = true;
-                }
-            }
-            if (!matchFound) {
-                System.out.println("Vendor Not found");
-            }
 
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        scanner.nextLine();
+        boolean vendorFound = false;
+        System.out.println("Enter Vendor To Search For:");
+        String vendorSearch = scanner.nextLine();
+        for (int i = 0; i < transactionsArrayList.size(); i++) {
+            if (transactionsArrayList.get(i).getVendor().equalsIgnoreCase(vendorSearch)) {
+                System.out.println(transactionsArrayList.get(i).toString());
+                vendorFound = true;
+            }
         }
+        if (!vendorFound) {
+            System.out.println("Vendor is not Found");
+        }
+
     }
 
     public static void previousYear() {
@@ -276,41 +290,11 @@ public class Main {
     }
 
     public static void monthToDate() {
-        /*
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            String entries;
-            System.out.println("Audit For Current Month:");
-            LocalDate currentDate = LocalDate.now();
-            int currentMonth = currentDate.getMonthValue();
-            boolean isCurrentMonth = false;
 
-            while ((entries = bufferedReader.readLine()) != null) {
-                String[] parts = entries.split("\\|");
-
-                String date = parts[0];
-                if (parts[0].equalsIgnoreCase("date")) {
-                    continue;//skip the header
-                }
-
-                String[] dateparts = date.split("-");
-                int currentMonthPart = Integer.parseInt(dateparts[1]);
-                if (currentMonth == currentMonthPart) {
-                    System.out.println(entries);
-                    isCurrentMonth = true;
-                }
-            }
-            if (!isCurrentMonth) {
-                System.out.println("There's no record for this month");
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
         currentAndPreviousMonth("current-month");
     }
 
-    public static void currentAndPreviousMonth(String statusort) {
+    public static void currentAndPreviousMonth(String statusReport) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String entries;
             boolean found = false;
@@ -319,49 +303,43 @@ public class Main {
             int monthValue = currentDate.getMonthValue();
             int currentYear = currentDate.getYear();
             //Previous Times
-            //LocalDate previousDate = currentDate.minusMonths(1);
             int previousMonth = currentDate.getMonthValue() - 1;
             int previousYear = currentDate.getYear() - 1;
 
             while ((entries = bufferedReader.readLine()) != null) {
                 String[] parts = entries.split("\\|");
-
                 String date = parts[0];
                 if (parts[0].equalsIgnoreCase("date")) {
                     continue;//skip the header
                 }
 
-                String[] dateparts = date.split("-");
-                int currentMonthPart = Integer.parseInt(dateparts[1]);
-                int currentYearPart = Integer.parseInt(dateparts[0]);
-                //current month
-                /*
-                 * Current-month,previous-month,current-year,previous-year
-                 * */
-                //current month
-                if (statusort.equals("current-month") && (currentYear == currentYearPart) && monthValue == currentMonthPart) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //previous month
-                if ((previousMonth == currentMonthPart) && statusort.equalsIgnoreCase("previous-month")) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //current year
-                if ((currentYear == currentYearPart) && statusort.equalsIgnoreCase("current-Year")) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //previous YEAR
-                if ((previousYear == currentYearPart) && statusort.equalsIgnoreCase("previous-Year")) {
-                    System.out.println(entries);
-                    found = true;
-                }
+                String[] dateParts = date.split("-");
+                int currentMonthPart = Integer.parseInt(dateParts[1]);
+                int currentYearPart = Integer.parseInt(dateParts[0]);
 
+                //current Month
+                if (statusReport.equals("current-month") && (currentYear == currentYearPart) && monthValue == currentMonthPart) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //Previous Month
+                if ((previousMonth == currentMonthPart) && statusReport.equalsIgnoreCase("previous-month")) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //Current year
+                if ((currentYear == currentYearPart) && statusReport.equalsIgnoreCase("current-Year")) {
+                    System.out.println(entries);
+                    found = true;
+                }
+                //Previous Year
+                if ((previousYear == currentYearPart) && statusReport.equalsIgnoreCase("previous-Year")) {
+                    System.out.println(entries);
+                    found = true;
+                }
             }
             if (!found) {
-                System.out.println("No data for this interval");
+                System.out.println("No Data Found!");
             }
 
         } catch (IOException ioe) {
