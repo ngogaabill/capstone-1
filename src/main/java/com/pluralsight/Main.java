@@ -209,7 +209,7 @@ public class Main {
      */
     public static void allEntries() {
         System.out.println("All Entries:");
-        for (int i = 0; i < transactionsArrayList.size(); i--) {
+        for (int i = transactionsArrayList.size() - 1; i >= 0; i--){
             System.out.println(transactionsArrayList.get(i).toString());
         }
     }
@@ -251,11 +251,11 @@ public class Main {
     }
 
     public static void yearToDate() {
-        currentAndPreviousMonth("current-year");
+        currentAndPreviousDates("current-year");
     }
 
     public static void previousMonth() {
-        currentAndPreviousMonth("previous-month");
+        currentAndPreviousDates("previous-month");
     }
 
     /**
@@ -280,15 +280,15 @@ public class Main {
     }
 
     public static void previousYear() {
-        currentAndPreviousMonth("previous-year");
+        currentAndPreviousDates("previous-year");
     }
 
     public static void monthToDate() {
 
-        currentAndPreviousMonth("current-month");
+        currentAndPreviousDates("current-month");
     }
 
-    public static void currentAndPreviousMonth(String statusReport) {
+    public static void currentAndPreviousDates(String statusReport) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String entries;
             boolean found = false;
@@ -303,6 +303,7 @@ public class Main {
             while ((entries = bufferedReader.readLine()) != null) {
                 String[] parts = entries.split("\\|");
                 String date = parts[0];
+
                 if (parts[0].equalsIgnoreCase("date")) {
                     continue;//skip the header
                 }
