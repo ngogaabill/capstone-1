@@ -23,11 +23,11 @@ public class Main {
     }
 
     private static void loadTransactionsFromFile() {
-        try(BufferedReader reader = new BufferedReader(new FileReader(fileName))){
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String data;
-            while((data = reader.readLine()) != null){
+            while ((data = reader.readLine()) != null) {
                 String[] parts = data.split("\\|");
-                if(parts[0].equalsIgnoreCase("date")){
+                if (parts[0].equalsIgnoreCase("date")) {
                     continue;
                 }
                 String date = parts[0];
@@ -39,7 +39,7 @@ public class Main {
                 Transactions transaction = new Transactions(date, time, description, vendor, amount);
                 transactionsArrayList.add(transaction);
             }
-        }catch (IOException E){
+        } catch (IOException E) {
             System.err.println("File Not Found");
         }
 
@@ -208,15 +208,9 @@ public class Main {
      * * Print All Transaction Read From the File
      */
     public static void allEntries() {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            String entries;
-            while ((entries = bufferedReader.readLine()) != null) {
-                System.out.println(entries);
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        System.out.println("All Entries:");
+        for (int i = 0; i < transactionsArrayList.size(); i--) {
+            System.out.println(transactionsArrayList.get(i).toString());
         }
     }
 
