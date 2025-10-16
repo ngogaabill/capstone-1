@@ -1,5 +1,6 @@
 package com.pluralsight;
 
+import javax.swing.text.DateFormatter;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -261,17 +262,54 @@ public class Main {
     private static void customSearch() {
         System.out.println("Please Enter all required details for the custom Search/Enter to Continue");
         System.out.println("Start Date(yyyy-mm-dd)");
-        String startDate = scanner.nextLine().trim();
+        scanner.nextLine();
+
+        String userStartDate = scanner.nextLine().trim();
         System.out.println("End Date");
-        String endDate = scanner.nextLine().trim();
+
+        String userEndDate = scanner.nextLine().trim();
         System.out.println("Description");
         String description = scanner.nextLine().trim();
+
         System.out.println("Vendor");
         String vendor = scanner.nextLine();
-        System.out.println("Amount");
-        double amount = scanner.nextDouble();
-        for (int i = 0; i < transactionsArrayList.size(); i++) {
 
+        System.out.println("Amount");
+        String inputAmount = scanner.nextLine();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Transactions trans : transactionsArrayList) {
+            boolean found = true;
+            LocalDate transactionDate = LocalDate.parse(trans.getDate(), dateFormatter);//parse the transaction string date into a local date
+            if (!userStartDate.isEmpty()) {
+                LocalDate startDate = LocalDate.parse(userStartDate, dateFormatter);
+                if (transactionDate.isBefore(startDate)) {
+                    found = false;
+                }
+            }
+            if (!userEndDate.isEmpty()) {
+                LocalDate endDate = LocalDate.parse(userEndDate, dateFormatter);
+                if (transactionDate.isAfter(endDate)) {
+                    found = false;
+                }
+            }
+            if (!description.isEmpty() && !trans.getDescription().contains(description)) {
+                found = false;
+
+            }
+            if (!vendor.isEmpty() && !trans.getVendor().contains(vendor)) {
+                found = false;
+
+            }
+            if (!inputAmount.isEmpty()) {
+                double amount = Double.parseDouble(inputAmount);
+                if (trans.getAmount() != amount) {
+                    found = false;
+                }
+            }
+            if (found) {
+                System.out.println(trans);
+            }
         }
     }
 
