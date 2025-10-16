@@ -27,6 +27,7 @@ public class Main {
             String data;
             while ((data = reader.readLine()) != null) {
                 String[] parts = data.split("\\|");
+
                 if (parts[0].equalsIgnoreCase("date")) {
                     continue;
                 }
@@ -51,11 +52,13 @@ public class Main {
     public static void homePage() {
         boolean exit = false;
         while (!exit) {
-            System.out.print("Please Enter a Letter Corresponding to Your Choice\nD) Add Deposit\n" +
-                    "P) Make Payment (Debit)\n" +
-                    "L) Ledger\n" +
-                    "E) Exit\n" +
-                    "Your Choice:");
+            System.out.print("""
+                    Please Enter a Letter Corresponding to Your Choice
+                        D) Add Deposit
+                        P) Make Payment
+                        L) Ledger
+                        X) Exit
+                    Your Choice: """);
             char userChoice = Character.toUpperCase(scanner.next().charAt(0));//read the char
             switch (userChoice) {
                 case 'D':
@@ -67,7 +70,7 @@ public class Main {
                 case 'L':
                     ledger();
                     break;
-                case 'E':
+                case 'X':
                     System.out.println("GOOD BYE!!E");
                     exit = true;
 
@@ -94,7 +97,6 @@ public class Main {
         System.out.println("Please Enter Payment Description:");
         loadUserInfoToFile(true);
     }
-
 
     /**
      * ledger Manuel
@@ -209,7 +211,7 @@ public class Main {
      */
     public static void allEntries() {
         System.out.println("All Entries:");
-        for (int i = transactionsArrayList.size() - 1; i >= 0; i--){
+        for (int i = transactionsArrayList.size() - 1; i >= 0; i--) {
             System.out.println(transactionsArrayList.get(i).toString());
         }
     }
@@ -219,13 +221,16 @@ public class Main {
      * Report method to display the menu
      */
     public static void report() {
-        System.out.println("1) Month To Date\n" +
-                "2) Previous Month\n" +
-                "3) Year To Date\n" +
-                "4) Previous Year\n" +
-                "5) Search by Vendor\n" +
-                "0) Back\n" +
-                "Choice: ");
+        System.out.print("""
+                1) Month To Date
+                2) Previous Month
+                3) Year To Date
+                4) Previous Year
+                5) Search by Vendor
+                6) Custom Search
+                0) Back
+                "Choice: """);
+
         int userChoice = scanner.nextInt();
         switch (userChoice) {
             case 1:
@@ -243,6 +248,9 @@ public class Main {
             case 5:
                 searchByVendor();
                 break;
+            case 6:
+                customSearch();
+                break;
             case 0:
                 ledger();
                 break;
@@ -250,11 +258,30 @@ public class Main {
         }
     }
 
+    private static void customSearch() {
+        System.out.println("Please Enter all required details for the custom Search/Enter to Continue");
+        System.out.println("Start Date(yyyy-mm-dd)");
+        String startDate = scanner.nextLine().trim();
+        System.out.println("End Date");
+        String endDate = scanner.nextLine().trim();
+        System.out.println("Description");
+        String description = scanner.nextLine().trim();
+        System.out.println("Vendor");
+        String vendor = scanner.nextLine();
+        System.out.println("Amount");
+        double amount = scanner.nextDouble();
+        for (int i = 0; i < transactionsArrayList.size(); i++) {
+
+        }
+    }
+
     public static void yearToDate() {
+        System.out.println("Transactions For Year");
         currentAndPreviousDates("current-year");
     }
 
     public static void previousMonth() {
+        System.out.println("Transactions For Previous Month");
         currentAndPreviousDates("previous-month");
     }
 
@@ -262,7 +289,6 @@ public class Main {
      * Search Vendor by name and print if match is found
      */
     public static void searchByVendor() {
-
         scanner.nextLine();
         boolean vendorFound = false;
         System.out.println("Enter Vendor To Search For:");
@@ -276,72 +302,62 @@ public class Main {
         if (!vendorFound) {
             System.out.println("Vendor is not Found");
         }
-
     }
 
     public static void previousYear() {
+        System.out.println("Transactions For Previous Year");
         currentAndPreviousDates("previous-year");
     }
 
     public static void monthToDate() {
-
+        System.out.println("Transactions For Current");
         currentAndPreviousDates("current-month");
     }
 
     public static void currentAndPreviousDates(String statusReport) {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            String entries;
-            boolean found = false;
-            //current Times
-            LocalDate currentDate = LocalDate.now();
-            int monthValue = currentDate.getMonthValue();
-            int currentYear = currentDate.getYear();
-            //Previous Times
-            int previousMonth = currentDate.getMonthValue() - 1;
-            int previousYear = currentDate.getYear() - 1;
+        boolean found = false;
+        //current Times
+        LocalDate currentDate = LocalDate.now();
+        int monthValue = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+        //Previous Times
+        int previousMonth = currentDate.getMonthValue() - 1;
+        int previousYear = currentDate.getYear() - 1;
 
-            while ((entries = bufferedReader.readLine()) != null) {
-                String[] parts = entries.split("\\|");
-                String date = parts[0];
+        for (int i = transactionsArrayList.size() - 1; i >= 0; i--) {
+            Transactions transactions = transactionsArrayList.get(i);
 
-                if (parts[0].equalsIgnoreCase("date")) {
-                    continue;//skip the header
-                }
-
-                String[] dateParts = date.split("-");
-                int currentMonthPart = Integer.parseInt(dateParts[1]);
-                int currentYearPart = Integer.parseInt(dateParts[0]);
-
-                //current Month
-                if (statusReport.equals("current-month") && (currentYear == currentYearPart) && monthValue == currentMonthPart) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //Previous Month
-                if ((previousMonth == currentMonthPart) && statusReport.equalsIgnoreCase("previous-month")) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //Current year
-                if ((currentYear == currentYearPart) && statusReport.equalsIgnoreCase("current-Year")) {
-                    System.out.println(entries);
-                    found = true;
-                }
-                //Previous Year
-                if ((previousYear == currentYearPart) && statusReport.equalsIgnoreCase("previous-Year")) {
-                    System.out.println(entries);
-                    found = true;
-                }
+            String[] dateParts = transactions.getDate().split("-");
+            int currentMonthPart = Integer.parseInt(dateParts[1]);
+            int currentYearPart = Integer.parseInt(dateParts[0]);
+            //current Month
+            if (statusReport.equals("current-month") && (currentYear == currentYearPart) && monthValue == currentMonthPart) {
+                System.out.println(transactions.toString());
+                found = true;
             }
-            if (!found) {
-                System.out.println("No Data Found!");
+            //Previous Month
+            if ((previousMonth == currentMonthPart) && statusReport.equalsIgnoreCase("previous-month")) {
+                System.out.println((transactions.toString()));
+                found = true;
             }
-
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            //Current year
+            if ((currentYear == currentYearPart) && statusReport.equalsIgnoreCase("current-Year")) {
+                System.out.println((transactions.toString()));
+                found = true;
+            }
+            //Previous Year
+            if ((previousYear == currentYearPart) && statusReport.equalsIgnoreCase("previous-Year")) {
+                System.out.println((transactions.toString()));
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No Data Found!");
         }
     }
 }
+
+
 
 
 
