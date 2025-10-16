@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
 public class Main {
     static Scanner scanner = new Scanner(System.in);
     static ArrayList<Transactions> transactionsArrayList = new ArrayList<>();
@@ -19,16 +18,19 @@ public class Main {
         System.out.println("|                     :)                          |");
         System.out.println("===================================================");
 
-        loadTransactionsFromFile();//Load existing info from file to arraylist.
+        loadTransactionsFromFile();
         homePage();
     }
 
+    /**
+     * Load Existing Transactions into an ArrayList of Transactions.
+     */
     private static void loadTransactionsFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String data;
             while ((data = reader.readLine()) != null) {
                 String[] parts = data.split("\\|");
-
+                //skip the header
                 if (parts[0].equalsIgnoreCase("date")) {
                     continue;
                 }
@@ -44,11 +46,10 @@ public class Main {
         } catch (IOException E) {
             System.err.println("File Not Found");
         }
-
     }
 
     /**
-     * HomePage Method to Print the Home Page Screen
+     * HomePage: Print the Home Page Screen
      */
     public static void homePage() {
         boolean exit = false;
@@ -60,7 +61,7 @@ public class Main {
                         L) Ledger
                         X) Exit
                     Your Choice: """);
-            char userChoice = Character.toUpperCase(scanner.next().charAt(0));//read the char
+            char userChoice = Character.toUpperCase(scanner.next().charAt(0));
             switch (userChoice) {
                 case 'D':
                     addDeposit();
@@ -82,8 +83,7 @@ public class Main {
     }
 
     /**
-     * Adds deposits to the arrayList
-     *
+     * Add a New Deposit to the ArrayList
      */
     public static void addDeposit() {
         System.out.println("Please Enter Debit Description:");
@@ -92,7 +92,7 @@ public class Main {
     }
 
     /**
-     * Add Payments to the list
+     * Add New Payments to the ArrayList
      */
     public static void makePayment() {
         System.out.println("Please Enter Payment Description:");
@@ -100,18 +100,18 @@ public class Main {
     }
 
     /**
-     * ledger Manuel
+     * Ledger Screen Manu
      */
     public static void ledger() {
         boolean returnHome = false;
         while (!returnHome) {
-            System.out.println("A)Display all entries\n" +
-                    "D) Deposits\n" +
-                    "account\n" +
-                    "P) Payments\n" +
-                    "R) Reports\n" +
-                    "H) Home\n" +
-                    "Your Choice:");
+            System.out.println("""
+                    A) Display all entries
+                    D) Deposits
+                    P) Payments
+                    R) Reports
+                    H) Home
+                    Your Choice:""");
 
             char userChoice = Character.toUpperCase(scanner.next().charAt(0));
             switch (userChoice) {
@@ -129,7 +129,7 @@ public class Main {
                     break;
                 case 'H':
                     returnHome = true;
-
+                    break;
             }
         }
 
@@ -137,11 +137,12 @@ public class Main {
 
 
     /**
-     * Get Info from user based on the transactions save to FILE and respective ArrayLists
+     * Get Info from user and save to CSV File and append to Transaction ArrayLists
      *
      * @param isPayment
      */
     public static void loadUserInfoToFile(boolean isPayment) {
+
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
         String timeDateStamp = currentTime.format(formatter);
@@ -156,15 +157,23 @@ public class Main {
         System.out.println("Amount:");
         double amount = scanner.nextDouble();
 
-        if (isPayment) { //if so turn into negative amount
+        if (isPayment) {
             amount *= -1;
         }
 
-        scanner.nextLine();//consume the newline
+        scanner.nextLine();//consume the new Line
         Transactions transactions = new Transactions(date, time, description, vendor, amount);
         transactionsArrayList.add(transactions);
+        System.out.println("Transaction Added!!");
 
         File file = new File(fileName);
+        try{
+            if(!file.exists()){
+                file.createNewFile();
+            }
+        }catch (IOException e){
+            System.err.println("Can't Create File");
+        }
         boolean noHeader = file.length() == 0;
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName, true))) {
             if (noHeader) {
@@ -195,7 +204,7 @@ public class Main {
     }
 
     /**
-     * Print payments in Transaction List
+     * Print Payments in Transaction List
      */
     public static void payments() {
         System.out.println("Your Payment List:");
@@ -204,11 +213,10 @@ public class Main {
                 System.out.println(transactionsArrayList.get(i).toString());
             }
         }
-
     }
 
     /**
-     * * Print All Transaction Read From the File
+     * * Print All Transaction in the ArrayList from Newest-Oldest
      */
     public static void allEntries() {
         System.out.println("All Entries:");
@@ -230,7 +238,7 @@ public class Main {
                 5) Search by Vendor
                 6) Custom Search
                 0) Back
-                "Choice: """);
+                Your Choice:""");
 
         int userChoice = scanner.nextInt();
         switch (userChoice) {
@@ -255,103 +263,45 @@ public class Main {
             case 0:
                 ledger();
                 break;
-
         }
     }
 
-    private static void customSearch() {
-        System.out.println("Please Enter all required details for the custom Search/Enter to Continue");
-        System.out.println("Start Date(yyyy-mm-dd)");
-        scanner.nextLine();
-
-        String userStartDate = scanner.nextLine().trim();
-        System.out.println("End Date");
-
-        String userEndDate = scanner.nextLine().trim();
-        System.out.println("Description");
-        String description = scanner.nextLine().trim();
-
-        System.out.println("Vendor");
-        String vendor = scanner.nextLine();
-
-        System.out.println("Amount");
-        String inputAmount = scanner.nextLine();
-
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        for (Transactions trans : transactionsArrayList) {
-            boolean found = true;
-            LocalDate transactionDate = LocalDate.parse(trans.getDate(), dateFormatter);//parse the transaction string date into a local date
-            if (!userStartDate.isEmpty()) {
-                LocalDate startDate = LocalDate.parse(userStartDate, dateFormatter);
-                if (transactionDate.isBefore(startDate)) {
-                    found = false;
-                }
-            }
-            if (!userEndDate.isEmpty()) {
-                LocalDate endDate = LocalDate.parse(userEndDate, dateFormatter);
-                if (transactionDate.isAfter(endDate)) {
-                    found = false;
-                }
-            }
-            if (!description.isEmpty() && !trans.getDescription().contains(description)) {
-                found = false;
-
-            }
-            if (!vendor.isEmpty() && !trans.getVendor().contains(vendor)) {
-                found = false;
-
-            }
-            if (!inputAmount.isEmpty()) {
-                double amount = Double.parseDouble(inputAmount);
-                if (trans.getAmount() != amount) {
-                    found = false;
-                }
-            }
-            if (found) {
-                System.out.println(trans);
-            }
-        }
+    /**
+     * Print Transactions of the Current Month
+     */
+    public static void monthToDate() {
+        System.out.println("Transactions For Current");
+        currentAndPreviousDates("current-month");
     }
 
-    public static void yearToDate() {
-        System.out.println("Transactions For Year");
-        currentAndPreviousDates("current-year");
-    }
-
+    /**
+     * Print Transactions of the Previous Month
+     */
     public static void previousMonth() {
         System.out.println("Transactions For Previous Month");
         currentAndPreviousDates("previous-month");
     }
 
     /**
-     * Search Vendor by name and print if match is found
+     * Print Transaction of the Current Year
      */
-    public static void searchByVendor() {
-        scanner.nextLine();
-        boolean vendorFound = false;
-        System.out.println("Enter Vendor To Search For:");
-        String vendorSearch = scanner.nextLine();
-        for (int i = 0; i < transactionsArrayList.size(); i++) {
-            if (transactionsArrayList.get(i).getVendor().equalsIgnoreCase(vendorSearch)) {
-                System.out.println(transactionsArrayList.get(i).toString());
-                vendorFound = true;
-            }
-        }
-        if (!vendorFound) {
-            System.out.println("Vendor is not Found");
-        }
+    public static void yearToDate() {
+        System.out.println("Transactions For Year");
+        currentAndPreviousDates("current-year");
     }
 
+    /**
+     * Print Transactions ot the Previous Year
+     */
     public static void previousYear() {
         System.out.println("Transactions For Previous Year");
         currentAndPreviousDates("previous-year");
     }
 
-    public static void monthToDate() {
-        System.out.println("Transactions For Current");
-        currentAndPreviousDates("current-month");
-    }
-
+    /**
+     * Handle Date Sorting based on their status
+     * @param statusReport
+     */
     public static void currentAndPreviousDates(String statusReport) {
         boolean found = false;
         //current Times
@@ -379,18 +329,88 @@ public class Main {
                 found = true;
             }
             //Current year
-            if ((currentYear == currentYearPart) && statusReport.equalsIgnoreCase("current-Year")) {
+            if ((currentYear == currentYearPart) && statusReport.equalsIgnoreCase("current-year")) {
                 System.out.println((transactions.toString()));
                 found = true;
             }
             //Previous Year
-            if ((previousYear == currentYearPart) && statusReport.equalsIgnoreCase("previous-Year")) {
+            if ((previousYear == currentYearPart) && statusReport.equalsIgnoreCase("previous-year")) {
                 System.out.println((transactions.toString()));
                 found = true;
             }
         }
         if (!found) {
             System.out.println("No Data Found!");
+        }
+    }
+
+    /**
+     * Print Transaction Based to the Entered Details
+     */
+    private static void customSearch() {
+        System.out.println("Please Enter all required details for the custom Search/Enter to Continue");
+        System.out.println("Start Date(yyyy-mm-dd)");
+        scanner.nextLine();
+        String userStartDate = scanner.nextLine().trim();
+        System.out.println("End Date");
+        String userEndDate = scanner.nextLine().trim();
+        System.out.println("Description");
+        String description = scanner.nextLine().trim();
+        System.out.println("Vendor");
+        String vendor = scanner.nextLine();
+        System.out.println("Amount");
+        String inputAmount = scanner.nextLine();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Transactions trans : transactionsArrayList) {
+            boolean found = true;
+            LocalDate transactionDate = LocalDate.parse(trans.getDate(), dateFormatter);//parse the transaction string date into a local date
+            if (!userStartDate.isEmpty()) {
+                LocalDate startDate = LocalDate.parse(userStartDate, dateFormatter);
+                if (transactionDate.isBefore(startDate)) {
+                    found = false;
+                }
+            }
+            if (!userEndDate.isEmpty()) {
+                LocalDate endDate = LocalDate.parse(userEndDate, dateFormatter);
+                if (transactionDate.isAfter(endDate)) {
+                    found = false;
+                }
+            }
+            if (!description.isEmpty() && !trans.getDescription().contains(description)) {
+                found = false;
+            }
+            if (!vendor.isEmpty() && !trans.getVendor().contains(vendor)) {
+                found = false;
+            }
+            if (!inputAmount.isEmpty()) {
+                double amount = Double.parseDouble(inputAmount);
+                if (trans.getAmount() != amount) {
+                    found = false;
+                }
+            }
+            if (found) {
+                System.out.println(trans);
+            }
+        }
+    }
+
+    /**
+     * Search Vendor by name and Print if Found
+     */
+    public static void searchByVendor() {
+        scanner.nextLine();
+        boolean vendorFound = false;
+        System.out.println("Enter Vendor To Search For:");
+        String vendorSearch = scanner.nextLine();
+        for (int i = 0; i < transactionsArrayList.size(); i++) {
+            if (transactionsArrayList.get(i).getVendor().equalsIgnoreCase(vendorSearch)) {
+                System.out.println(transactionsArrayList.get(i).toString());
+                vendorFound = true;
+            }
+        }
+        if (!vendorFound) {
+            System.out.println("Vendor is not Found");
         }
     }
 }
