@@ -142,7 +142,7 @@ public class Main {
      * @param isPayment
      */
     public static void loadUserInfoToFile(boolean isPayment) {
-
+//mAKE A PROMPT TO GE TTIME MANUALLY
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
         String timeDateStamp = currentTime.format(formatter);
@@ -270,7 +270,7 @@ public class Main {
      * Print Transactions of the Current Month
      */
     public static void monthToDate() {
-        System.out.println("Transactions For Current");
+        System.out.println("Transactions For Current Month");
         currentAndPreviousDates("current-month");
     }
 
@@ -309,8 +309,9 @@ public class Main {
         int monthValue = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
         //Previous Times
-        int previousMonth = currentDate.getMonthValue() - 1;
-        int previousYear = currentDate.getYear() - 1;
+        LocalDate previousMonthDate = currentDate.minusMonths(1);
+        int previousMonth = previousMonthDate.getMonthValue();
+        int previousYear = previousMonthDate.getYear()-1;
 
         for (int i = transactionsArrayList.size() - 1; i >= 0; i--) {
             Transactions transactions = transactionsArrayList.get(i);
