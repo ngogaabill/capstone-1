@@ -73,7 +73,7 @@ public class Main {
                     ledger();
                     break;
                 case 'X':
-                    System.out.println("GOOD BYE!!E");
+                    System.out.println("GOOD BYE!!");
                     exit = true;
 
             }
@@ -136,13 +136,14 @@ public class Main {
     }
 
 
+
     /**
      * Get Info from user and save to CSV File and append to Transaction ArrayLists
      *
      * @param isPayment
      */
     public static void loadUserInfoToFile(boolean isPayment) {
-//mAKE A PROMPT TO GE TTIME MANUALLY
+
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd|HH:mm:ss");
         String timeDateStamp = currentTime.format(formatter);
@@ -227,7 +228,6 @@ public class Main {
             System.out.println(transactions.toString());
         }
     }
-
 
     /**
      * Report method to display the menu
