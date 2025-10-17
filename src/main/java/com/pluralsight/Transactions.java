@@ -1,14 +1,17 @@
 package com.pluralsight;
 
-public class Transactions {
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public class Transactions implements Comparable<Transactions> {
     //date|time|description|vendor|amount
     private String vendor;
     private double amount;
-    private  String description;
+    private String description;
     private String time;
     private String date;
 
-    public Transactions(String date, String time, String description, String vendor,double amount) {
+    public Transactions(String date, String time, String description, String vendor, double amount) {
         this.vendor = vendor;
         this.time = time;
         this.description = description;
@@ -55,9 +58,23 @@ public class Transactions {
     public void setDate(String date) {
         this.date = date;
     }
-    public String toString(){
+
+    public String toString() {
         return date + "|" + time + "|" + description + "|" + vendor + "|" + amount;
     }
 
 
+    @Override
+    public int compareTo(Transactions other) {
+        LocalDate thisDate = LocalDate.parse(this.date);
+        LocalDate otherDate = LocalDate.parse(other.date);
+
+        int dateCompare = otherDate.compareTo(thisDate);//if int is +ve otherDate comes first
+        if (dateCompare != 0) {
+            return dateCompare;
+        }
+        LocalTime thisTime = LocalTime.parse(this.time);
+        LocalTime otherTime = LocalTime.parse(other.time);
+        return otherTime.compareTo(thisTime);
+    }
 }

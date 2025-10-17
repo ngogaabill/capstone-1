@@ -1,11 +1,11 @@
 package com.pluralsight;
 
-import javax.swing.text.DateFormatter;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class Main {
@@ -167,11 +167,11 @@ public class Main {
         System.out.println("Transaction Added!!");
 
         File file = new File(fileName);
-        try{
-            if(!file.exists()){
+        try {
+            if (!file.exists()) {
                 file.createNewFile();
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Can't Create File");
         }
         boolean noHeader = file.length() == 0;
@@ -196,9 +196,10 @@ public class Main {
      */
     public static void deposits() {
         System.out.println("Your Deposit List:");
-        for (int i = 0; i < transactionsArrayList.size(); i++) {
-            if (transactionsArrayList.get(i).getAmount() > 0) {
-                System.out.println(transactionsArrayList.get(i).toString());
+        Collections.sort(transactionsArrayList);
+        for (Transactions transactions:transactionsArrayList) {
+            if (transactions.getAmount() > 0) {
+                System.out.println(transactions.toString());
             }
         }
     }
@@ -208,9 +209,10 @@ public class Main {
      */
     public static void payments() {
         System.out.println("Your Payment List:");
-        for (int i = 0; i < transactionsArrayList.size(); i++) {
-            if (transactionsArrayList.get(i).getAmount() < 0) {
-                System.out.println(transactionsArrayList.get(i).toString());
+        Collections.sort(transactionsArrayList);
+        for (Transactions transactions:transactionsArrayList) {
+            if (transactions.getAmount() < 0) {
+                System.out.println(transactions.toString());
             }
         }
     }
@@ -220,8 +222,9 @@ public class Main {
      */
     public static void allEntries() {
         System.out.println("All Entries:");
-        for (int i = transactionsArrayList.size() - 1; i >= 0; i--) {
-            System.out.println(transactionsArrayList.get(i).toString());
+        Collections.sort(transactionsArrayList);
+        for (Transactions transactions:transactionsArrayList) {
+            System.out.println(transactions.toString());
         }
     }
 
@@ -300,6 +303,7 @@ public class Main {
 
     /**
      * Handle Date Sorting based on their status
+     *
      * @param statusReport
      */
     public static void currentAndPreviousDates(String statusReport) {
@@ -311,7 +315,7 @@ public class Main {
         //Previous Times
         LocalDate previousMonthDate = currentDate.minusMonths(1);
         int previousMonth = previousMonthDate.getMonthValue();
-        int previousYear = previousMonthDate.getYear()-1;
+        int previousYear = previousMonthDate.getYear() - 1;
 
         for (int i = transactionsArrayList.size() - 1; i >= 0; i--) {
             Transactions transactions = transactionsArrayList.get(i);
